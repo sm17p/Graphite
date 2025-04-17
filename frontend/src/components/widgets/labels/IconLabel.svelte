@@ -1,17 +1,26 @@
 <script lang="ts">
+	import type { ClassValue } from "svelte/elements";
 	import { type IconName, ICONS, ICON_SVG_STRINGS } from "@graphite/utility-functions/icons";
 
 	import LayoutRow from "@graphite/components/layout/LayoutRow.svelte";
+	
+	interface Props {
+		class?: ClassValue;
+		icon: IconName;
+		iconSizeOverride?: number | undefined;
+		disabled?: boolean;
+		tooltip?: string | undefined;
+	}
 
-	let className = "";
-	export { className as class };
-	export let classes: Record<string, boolean> = {};
-	export let icon: IconName;
-	export let iconSizeOverride: number | undefined = undefined;
-	export let disabled = false;
-	export let tooltip: string | undefined = undefined;
+	let {
+		class: className = "",
+		icon,
+		iconSizeOverride = undefined,
+		disabled = false,
+		tooltip = undefined
+	}: Props = $props();
 
-	$: iconSizeClass = ((icon: IconName) => {
+	let iconSizeClass = $derived.by(() => {
 		const iconData = ICONS[icon];
 		if (!iconData) {
 			// eslint-disable-next-line no-console
@@ -20,13 +29,10 @@
 		}
 		if (iconData.size === undefined) return "";
 		return `size-${iconSizeOverride || iconData.size}`;
-	})(icon);
-	$: extraClasses = Object.entries(classes)
-		.flatMap(([className, stateName]) => (stateName ? [className] : []))
-		.join(" ");
+	});
 </script>
 
-<LayoutRow class={`icon-label ${iconSizeClass} ${className} ${extraClasses}`.trim()} classes={{ disabled }} {tooltip}>
+<LayoutRow class={["icon-label", iconSizeClass, className, { disabled }]} {tooltip}>
 	{@html ICON_SVG_STRINGS[icon] || "�"}
 </LayoutRow>
 

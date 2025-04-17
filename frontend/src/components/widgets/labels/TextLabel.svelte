@@ -1,40 +1,54 @@
 <script lang="ts">
-	let className = "";
-	export { className as class };
-	export let classes: Record<string, boolean> = {};
-	let styleName = "";
-	export { styleName as style };
-	export let styles: Record<string, string | number | undefined> = {};
-	export let disabled = false;
-	export let bold = false;
-	export let italic = false;
-	export let centerAlign = false;
-	export let tableAlign = false;
-	export let minWidth = 0;
-	export let multiline = false;
-	export let tooltip: string | undefined = undefined;
+	import type { ClassValue, } from 'svelte/elements';
+	import type { Snippet } from 'svelte';
+	
+	interface Props extends Graphite.SvelteSpanElement {
+		style?: string;
+		styles?: Graphite.StyleValue;
+		disabled?: boolean;
+		bold?: boolean;
+		italic?: boolean;
+		centerAlign?: boolean;
+		tableAlign?: boolean;
+		minWidth?: number;
+		multiline?: boolean;
+		tooltip?: string | undefined;
+	}
 
-	$: extraClasses = Object.entries(classes)
-		.flatMap(([className, stateName]) => (stateName ? [className] : []))
-		.join(" ");
-	$: extraStyles = Object.entries(styles)
+	let {
+		class: className,
+		style: styleName = "",
+		styles = {},
+		disabled = false,
+		bold = false,
+		italic = false,
+		centerAlign = false,
+		tableAlign = false,
+		minWidth = 0,
+		multiline = false,
+		tooltip = undefined,
+		children
+	}: Props = $props();
+
+	let extraStyles = $derived(Object.entries(styles)
 		.flatMap((styleAndValue) => (styleAndValue[1] !== undefined ? [`${styleAndValue[0]}: ${styleAndValue[1]};`] : []))
-		.join(" ");
+		.join(" "));
 </script>
 
 <span
-	class={`text-label ${className} ${extraClasses}`.trim()}
-	class:disabled
-	class:bold
-	class:italic
-	class:multiline
-	class:center-align={centerAlign}
-	class:table-align={tableAlign}
+	class={["text-label", className, {
+		disabled,
+		bold,
+		italic,
+		multiline,
+		"center-align": centerAlign,
+		"table-align": tableAlign
+	}]}
 	style:min-width={minWidth > 0 ? `${minWidth}px` : ""}
 	style={`${styleName} ${extraStyles}`.trim() || undefined}
 	title={tooltip}
 >
-	<slot />
+	{@render children?.()}
 </span>
 
 <style lang="scss" global>
